@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.shortcuts import render
 
 # Create your views here.
@@ -12,7 +13,7 @@ def post_list(request):
 
 
 def post_detail(request, pk):
-    post = get_object_or_404(Post, pk=pk)
+    post = Post.objects.prefetch_related('comments').get(pk=pk)
     comments = post.comments.all()
     if request.method == 'POST':
         form = CommentForm(request.POST)
@@ -26,6 +27,7 @@ def post_detail(request, pk):
     return render(request, 'blog/post_detail.html', {'post': post, 'comments': comments, 'form': form})
 
 
+@transaction.atomic
 def post_create(request):
     if request.method == 'POST':
         form = PostForm(request.POST, request.FILES)
@@ -39,6 +41,7 @@ def post_create(request):
     return render(request, 'blog/post_form.html', {'form': form})
 
 
+@transaction.atomic
 def post_edit(request, pk):
     post = get_object_or_404(Post, pk=pk)
     if request.method == 'POST':
@@ -51,6 +54,7 @@ def post_edit(request, pk):
     return render(request, 'blog/post_edit.html', {'form': form})
 
 
+@transaction.atomic
 def post_delete(request, pk):
     post = get_object_or_404(Post, pk=pk)
     if request.method == 'POST':
@@ -59,7 +63,7 @@ def post_delete(request, pk):
     return render(request, 'blog/post_delete.html', {'post': post})
 
 
-
+@transaction.atomic
 def add_comment_to_post(request, pk):
     post = get_object_or_404(Post, pk=pk)
     if request.method == 'POST':
