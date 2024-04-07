@@ -1,11 +1,12 @@
 from django.db import transaction
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Post
+from .models import Post, User
 from .forms import PostForm, CommentForm
 from .serializers import PostSerializer
+from django.contrib.auth.decorators import login_required
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -22,7 +23,8 @@ def post_list(request):
         posts = Post.objects.all()
         return render(request, 'blog/post_list.html', {'posts': posts})
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        # В случае ошибки возвращаем пустой список постов
+        return render(request, 'blog/post_list.html', {'posts': []})
 
 
 def post_detail(request, pk):
@@ -44,6 +46,7 @@ def post_detail(request, pk):
 
 
 @transaction.atomic
+@login_required
 def post_create(request):
     try:
         if request.method == 'POST':
@@ -52,6 +55,7 @@ def post_create(request):
                 post = form.save(commit=False)
                 post.author = request.user
                 post.save()
+                # После успешного создания поста перенаправляем на страницу с деталями этого поста
                 return redirect('post_detail', pk=post.pk)
         else:
             form = PostForm()
@@ -61,34 +65,37 @@ def post_create(request):
 
 
 @transaction.atomic
+@login_required
 def post_edit(request, pk):
-    try:
-        post = get_object_or_404(Post, pk=pk)
-        if request.method == 'POST':
-            form = PostForm(request.POST, instance=post)
-            if form.is_valid():
-                form.save()
-                return redirect('post_detail', pk=post.pk)
-        else:
-            form = PostForm(instance=post)
-        return render(request, 'blog/post_edit.html', {'form': form})
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+    post = get_object_or_404(Post, pk=pk)
+    if post.author != request.user:
+        return JsonResponse({'error': 'You are not authorized to edit this post.'}, status=403)
+
+    if request.method == 'POST':
+        form = PostForm(request.POST, instance=post)
+        if form.is_valid():
+            form.save()
+            return redirect('post_detail', pk=post.pk)
+    else:
+        form = PostForm(instance=post)
+    return render(request, 'blog/post_edit.html', {'form': form})
 
 
 @transaction.atomic
+@login_required
 def post_delete(request, pk):
-    try:
-        post = get_object_or_404(Post, pk=pk)
-        if request.method == 'POST':
-            post.delete()
-            return redirect('post_list')
-        return render(request, 'blog/post_delete.html', {'post': post})
-    except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+    post = get_object_or_404(Post, pk=pk)
+    if post.author != request.user:
+        return JsonResponse({'error': 'You are not authorized to delete this post.'}, status=403)
+
+    if request.method == 'POST':
+        post.delete()
+        return redirect('post_list')
+    return render(request, 'blog/post_delete.html', {'post': post})
 
 
 @transaction.atomic
+@login_required  # Добавляем декоратор, чтобы убедиться, что пользователь аутентифицирован
 def add_comment_to_post(request, pk):
     try:
         post = get_object_or_404(Post, pk=pk)
