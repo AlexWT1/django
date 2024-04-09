@@ -1,0 +1,4 @@
+.fab:active {
+    transform: scale(1.2); /* Увеличиваем размер при нажатии */
+    transition: transform 0.3s ease-in-out; /* Плавное изменение размера */
+}
