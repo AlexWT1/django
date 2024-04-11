@@ -1,10 +1,20 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import Group, Permission
+from .models import User, Post, Comment
 
-# Register your models here.
-from django.contrib import admin
-from .models import Post, Comment
+
+# Если вы хотите настроить интерфейс администратора для пользователей, создайте класс UserAdmin
+class UserAdmin(BaseUserAdmin):
+    # Настройте здесь атрибуты класса UserAdmin, если это необходимо
+    pass
 
 
+# Зарегистрируйте модель User с использованием настроенного класса UserAdmin
+admin.site.register(User, UserAdmin)
+
+
+# Регистрация других моделей
 @admin.register(Post)
 class PostAdmin(admin.ModelAdmin):
     list_display = ('title', 'author', 'created_at', 'updated_at')
