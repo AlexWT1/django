@@ -5,18 +5,18 @@
         <div class="container mt-3 mb-3">
             <div class="row">
                 {% for post in posts %}
-                    <div class="col-md-4">
-                        <div class="card mb-4">
+                    <div class="col-md-12 mb-4">
+                        <div class="card">
                             <div class="card-body">
                                 <h2 class="card-title"><a href="{% url 'post_detail' pk=post.pk %}">{{ post.title }}</a></h2>
                                 <p class="card-text">{{ post.description }}</p>
                             </div>
                             <div class="card-footer text-muted">
                                 <div class="row">
-                                    <div class="col-6">
+                                    <div class="col-md-6">
                                         {{ post.author }}
                                     </div>
-                                    <div class="col-6 text-right">
+                                    <div class="col-md-6 text-right">
                                         <i class="fas fa-heart"></i> {{ post.likes.all.count }} &nbsp;&nbsp;
                                         <i class="fas fa-comment"></i> {{ post.comments.all.count }}
                                     </div>
