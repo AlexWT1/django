@@ -2,3 +2,19 @@
     transform: scale(1.2); /* Увеличиваем размер при нажатии */
     transition: transform 0.3s ease-in-out; /* Плавное изменение размера */
 }
+
+html, body {
+    height: 100%;
+}
+
+main {
+    min-height: calc(100vh - 56px); /* 56px - высота header */
+}
+
+footer {
+    width: 100%;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+}
