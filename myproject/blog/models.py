@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, Group, Permission
 
+
 class PostManager(models.Manager):
     def get_posts_by_likes(self, min_likes=0):
         """

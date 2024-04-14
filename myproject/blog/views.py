@@ -4,9 +4,11 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Post, User
-from .forms import PostForm, CommentForm
+from .forms import PostForm, CommentForm, SignUpForm
 from .serializers import PostSerializer
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth import login, logout
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -111,3 +113,32 @@ def add_comment_to_post(request, pk):
         return render(request, 'blog/add_comment_to_post.html', {'form': form})
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+def signup_view(request):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect('post_list')  # Замените 'home' на имя вашей домашней страницы
+    else:
+        form = UserCreationForm()
+    return render(request, 'blog/signup.html', {'form': form})
+
+
+def login_view(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect('post_list')  # Замените 'home' на имя вашей домашней страницы
+    else:
+        form = AuthenticationForm()
+    return render(request, 'blog/login.html', {'form': form})
+
+
+def logout_view(request):
+    logout(request)
+    return redirect('post_list')  # Замените 'home' на имя вашей домашней страницы
